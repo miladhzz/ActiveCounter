@@ -8,6 +8,7 @@ namespace ActiveCounter
     {
         private int hours, minutes, seconds;
         private bool isRunning;
+        private bool isMinimized = false; // متغیر جدید برای tracking minimize
 
         private readonly System.Windows.Forms.Timer blinkTimer = new();
         private bool blinkState;
@@ -45,6 +46,7 @@ namespace ActiveCounter
             StopTimer();
 
             hours = minutes = seconds = 0;
+            isMinimized = false;
             UpdateLabels();
         }
 
@@ -61,13 +63,13 @@ namespace ActiveCounter
             {
                 blinkTimer.Stop();
                 BackColor = Color.Green;
-                Icon = Properties.Resources.green;
+                Icon = Properties.Resources.green; // اگر آیکون داری
             }
             else
             {
                 blinkState = false;
                 BackColor = Color.Red;
-                Icon = Properties.Resources.red;
+                Icon = Properties.Resources.red; // اگر آیکون داری
                 blinkTimer.Start();
             }
         }
@@ -77,7 +79,8 @@ namespace ActiveCounter
             if (isRunning) return;
 
             blinkState = !blinkState;
-            Icon = blinkState ? Properties.Resources.red : Properties.Resources.red2;
+            BackColor = blinkState ? Color.Red : Color.OrangeRed;
+            Icon = blinkState ? Properties.Resources.red : Properties.Resources.red2; // اگر آیکون داری
         }
 
         private void UpdateLabels()
@@ -109,27 +112,40 @@ namespace ActiveCounter
 
         private void btnStop_Click(object sender, EventArgs e) => StopTimer();
 
-        private void buttonRest_Click(object sender, EventArgs e) => ResetTimer();
+        private void buttonReset_Click(object sender, EventArgs e) => ResetTimer();
 
         private void MainForm_Deactivate(object sender, EventArgs e)
         {
-            if (checkBox1.Checked && isRunning)
+            if (checkBoxFocus.Checked && isRunning)
                 StopTimer();
         }
 
         private void MainForm_Activated(object sender, EventArgs e)
         {
-            if (checkBox1.Checked && !isRunning)
+            // فقط در صورتی که minimize نبوده باشه و فوکوس فعال باشه
+            if (checkBoxFocus.Checked && !isRunning && !isMinimized)
                 StartTimer();
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            if (WindowState == FormWindowState.Minimized &&
-                checkBox1.Checked &&
-                isRunning)
+            if (!checkBoxFocus.Checked) return;
+
+            if (WindowState == FormWindowState.Minimized)
             {
-                StopTimer();
+                if (isRunning)
+                {
+                    isMinimized = true;
+                    StopTimer();
+                }
+            }
+            else if (WindowState == FormWindowState.Normal && isMinimized)
+            {
+                isMinimized = false;
+                if (!isRunning)
+                {
+                    StartTimer();
+                }
             }
         }
 
@@ -161,8 +177,18 @@ namespace ActiveCounter
             }
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        private void checkBoxFocus_CheckedChanged(object sender, EventArgs e)
         {
+            // وقتی چک‌باکس غیرفعال میشه، وضعیت minimize رو ریست کن
+            if (!checkBoxFocus.Checked)
+                isMinimized = false;
+        }
+
+        // جلوگیری از وارد کردن کاراکترهای غیرعددی در TextBoxMin
+        private void textBoxMin_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+                e.Handled = true;
         }
     }
 }

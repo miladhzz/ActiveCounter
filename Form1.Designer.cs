@@ -37,7 +37,7 @@
             lblSeconds = new Label();
             buttonReset = new Button();
             textBox1 = new TextBox();
-            checkBox1 = new CheckBox();
+            checkBoxFocus = new CheckBox();
             buttonUp = new Button();
             buttonDown = new Button();
             textBoxMin = new TextBox();
@@ -107,7 +107,7 @@
             buttonReset.TabIndex = 5;
             buttonReset.Text = "reset";
             buttonReset.UseVisualStyleBackColor = true;
-            buttonReset.Click += buttonRest_Click;
+            buttonReset.Click += buttonReset_Click;
             // 
             // textBox1
             // 
@@ -117,16 +117,15 @@
             textBox1.Size = new Size(364, 47);
             textBox1.TabIndex = 6;
             // 
-            // checkBox1
+            // checkBoxFocus
             // 
-            checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(198, 12);
-            checkBox1.Name = "checkBox1";
-            checkBox1.Size = new Size(171, 29);
-            checkBox1.TabIndex = 7;
-            checkBox1.Text = "فعالسازی فوکوس";
-            checkBox1.UseVisualStyleBackColor = true;
-            checkBox1.CheckedChanged += checkBox1_CheckedChanged;
+            checkBoxFocus.AutoSize = true;
+            checkBoxFocus.Location = new Point(198, 12);
+            checkBoxFocus.Name = "checkBoxFocus";
+            checkBoxFocus.Size = new Size(171, 29);
+            checkBoxFocus.TabIndex = 7;
+            checkBoxFocus.Text = "فعالسازی فوکوس";
+            checkBoxFocus.UseVisualStyleBackColor = true;
             // 
             // buttonUp
             // 
@@ -176,7 +175,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(877, 325);
             Controls.Add(groupBoxUpDown);
-            Controls.Add(checkBox1);
+            Controls.Add(checkBoxFocus);
             Controls.Add(textBox1);
             Controls.Add(buttonReset);
             Controls.Add(lblSeconds);
@@ -205,7 +204,7 @@
         private Label lblSeconds;
         private Button buttonReset;
         private TextBox textBox1;
-        private CheckBox checkBox1;
+        private CheckBox checkBoxFocus;
         private Button buttonUp;
         private Button buttonDown;
         private TextBox textBoxMin;
