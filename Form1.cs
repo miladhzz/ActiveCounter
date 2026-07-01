@@ -6,25 +6,24 @@ namespace ActiveCounter
 {
     public partial class Form1 : Form
     {
-        private int hours;
-        private int minutes;
-        private int seconds;
-
+        private int hours, minutes, seconds;
         private bool isRunning;
+
+        private readonly System.Windows.Forms.Timer blinkTimer = new();
+        private bool blinkState;
 
         public Form1()
         {
             InitializeComponent();
 
-            InitializeTimer();
+            timer1.Interval = 1000;
+            timer1.Stop();
+
+            blinkTimer.Interval = 1000;
+            blinkTimer.Tick += BlinkTimer_Tick;
+
             UpdateLabels();
             UpdateUI();
-        }
-
-        private void InitializeTimer()
-        {
-            timer1.Interval = 1000;
-            timer1.Enabled = false;
         }
 
         private void StartTimer()
@@ -45,10 +44,7 @@ namespace ActiveCounter
         {
             StopTimer();
 
-            hours = 0;
-            minutes = 0;
-            seconds = 0;
-
+            hours = minutes = seconds = 0;
             UpdateLabels();
         }
 
@@ -61,10 +57,27 @@ namespace ActiveCounter
             textBox1.Enabled = !isRunning;
             groupBoxUpDown.Enabled = !isRunning;
 
-            BackColor = isRunning ? Color.Green : Color.Red;
-            Icon = isRunning
-                ? Properties.Resources.green
-                : Properties.Resources.red;
+            if (isRunning)
+            {
+                blinkTimer.Stop();
+                BackColor = Color.Green;
+                Icon = Properties.Resources.green;
+            }
+            else
+            {
+                blinkState = false;
+                BackColor = Color.Red;
+                Icon = Properties.Resources.red;
+                blinkTimer.Start();
+            }
+        }
+
+        private void BlinkTimer_Tick(object? sender, EventArgs e)
+        {
+            if (isRunning) return;
+
+            blinkState = !blinkState;
+            Icon = blinkState ? Properties.Resources.red : Properties.Resources.red2;
         }
 
         private void UpdateLabels()
@@ -74,25 +87,9 @@ namespace ActiveCounter
             lblSeconds.Text = $"{seconds:D2}";
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
-        {
-            StartTimer();
-        }
-
-        private void btnStop_Click(object sender, EventArgs e)
-        {
-            StopTimer();
-        }
-
-        private void buttonReset_Click(object sender, EventArgs e)
-        {
-            ResetTimer();
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             seconds++;
-
             if (seconds >= 60)
             {
                 seconds = 0;
@@ -108,12 +105,15 @@ namespace ActiveCounter
             UpdateLabels();
         }
 
+        private void btnStart_Click(object sender, EventArgs e) => StartTimer();
+
+        private void btnStop_Click(object sender, EventArgs e) => StopTimer();
+
+        private void buttonRest_Click(object sender, EventArgs e) => ResetTimer();
+
         private void MainForm_Deactivate(object sender, EventArgs e)
         {
-            if (!checkBox1.Checked)
-                return;
-
-            if (isRunning)
+            if (checkBox1.Checked && isRunning)
                 StopTimer();
         }
 
@@ -138,7 +138,11 @@ namespace ActiveCounter
             if (int.TryParse(textBoxMin.Text, out int value))
             {
                 minutes += value;
-                NormalizeTime();
+                while (minutes >= 60)
+                {
+                    minutes -= 60;
+                    hours++;
+                }
                 UpdateLabels();
             }
         }
@@ -147,22 +151,13 @@ namespace ActiveCounter
         {
             if (int.TryParse(textBoxMin.Text, out int value))
             {
-                minutes -= value;
+                int total = hours * 60 + minutes - value;
+                if (total < 0) total = 0;
 
-                if (minutes < 0)
-                    minutes = 0;
+                hours = total / 60;
+                minutes = total % 60;
 
-                NormalizeTime();
                 UpdateLabels();
-            }
-        }
-
-        private void NormalizeTime()
-        {
-            while (minutes >= 60)
-            {
-                minutes -= 60;
-                hours++;
             }
         }
 

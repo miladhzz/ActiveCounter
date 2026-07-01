@@ -107,7 +107,7 @@
             buttonReset.TabIndex = 5;
             buttonReset.Text = "reset";
             buttonReset.UseVisualStyleBackColor = true;
-            buttonReset.Click += buttonReset_Click;
+            buttonReset.Click += buttonRest_Click;
             // 
             // textBox1
             // 
