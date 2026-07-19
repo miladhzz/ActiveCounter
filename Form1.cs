@@ -13,6 +13,12 @@ namespace ActiveCounter
         private readonly System.Windows.Forms.Timer blinkTimer = new();
         private bool blinkState;
 
+        // فیلدهای جدید برای ثبت زمانها
+        private List<TimerRecord> timerRecords = new List<TimerRecord>();
+        private DateTime? startTime;
+        private DateTime? stopTime;
+        private DateTime? lastStopTime;
+
         public Form1()
         {
             InitializeComponent();
@@ -25,11 +31,86 @@ namespace ActiveCounter
 
             UpdateLabels();
             UpdateUI();
+            InitializeDataGridView(); // این متد باید فراخوانی شود
+            dataGridViewRecords.CellFormatting += DataGridViewRecords_CellFormatting; // این رویداد باید متصل شود
+        }
+        private void DataGridViewRecords_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.RowIndex >= timerRecords.Count)
+                return;
+
+            // فرمت نمایش زمان شروع و توقف
+            if (dataGridViewRecords.Columns[e.ColumnIndex].DataPropertyName == "StartTime" ||
+                dataGridViewRecords.Columns[e.ColumnIndex].DataPropertyName == "StopTime")
+            {
+                if (e.Value is DateTime dateTime)
+                {
+                    e.Value = dateTime.ToString("HH:mm:ss");
+                    e.FormattingApplied = true;
+                }
+            }
         }
 
+        private void InitializeDataGridView()
+        {
+            dataGridViewRecords.AutoGenerateColumns = false;
+            dataGridViewRecords.Columns.Clear();
+
+            // ستون زمان شروع
+            DataGridViewTextBoxColumn startTimeColumn = new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "StartTime",
+                HeaderText = "زمان شروع",
+                Width = 150
+            };
+            dataGridViewRecords.Columns.Add(startTimeColumn);
+
+            // ستون زمان توقف
+            DataGridViewTextBoxColumn stopTimeColumn = new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "StopTime",
+                HeaderText = "زمان توقف",
+                Width = 150
+            };
+            dataGridViewRecords.Columns.Add(stopTimeColumn);
+
+            // ستون مدت زمان کار
+            DataGridViewTextBoxColumn workDurationColumn = new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "WorkDurationString",
+                HeaderText = "مدت زمان کار",
+                Width = 150
+            };
+            dataGridViewRecords.Columns.Add(workDurationColumn);
+
+            // ستون مدت زمان توقف
+            DataGridViewTextBoxColumn stopDurationColumn = new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "StopDurationString",
+                HeaderText = "مدت زمان توقف",
+                Width = 150
+            };
+            dataGridViewRecords.Columns.Add(stopDurationColumn);
+
+            dataGridViewRecords.DataSource = timerRecords;
+        }
         private void StartTimer()
         {
             isRunning = true;
+            startTime = DateTime.Now;
+
+            // محاسبه مدت زمان توقف از آخرین توقف تا الان
+            if (lastStopTime.HasValue)
+            {
+                TimeSpan stopDuration = startTime.Value - lastStopTime.Value;
+                if (timerRecords.Count > 0)
+                {
+                    timerRecords[timerRecords.Count - 1].StopDuration = stopDuration;
+                    dataGridViewRecords.DataSource = null;
+                    dataGridViewRecords.DataSource = timerRecords;
+                }
+            }
+
             timer1.Start();
             UpdateUI();
         }
@@ -37,10 +118,31 @@ namespace ActiveCounter
         private void StopTimer()
         {
             isRunning = false;
+            stopTime = DateTime.Now;
+            lastStopTime = stopTime;
+
+            // محاسبه مدت زمان کار
+            if (startTime.HasValue && stopTime.HasValue)
+            {
+                TimeSpan workDuration = stopTime.Value - startTime.Value;
+
+                // ایجاد رکورد جدید
+                TimerRecord record = new TimerRecord
+                {
+                    StartTime = startTime.Value,
+                    StopTime = stopTime.Value,
+                    WorkDuration = workDuration,
+                    StopDuration = TimeSpan.Zero // مقدار پیشفرض
+                };
+
+                timerRecords.Add(record);
+                dataGridViewRecords.DataSource = null;
+                dataGridViewRecords.DataSource = timerRecords;
+            }
+
             timer1.Stop();
             UpdateUI();
         }
-
         private void ResetTimer()
         {
             StopTimer();
@@ -189,6 +291,11 @@ namespace ActiveCounter
         {
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
                 e.Handled = true;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -42,7 +42,9 @@
             buttonDown = new Button();
             textBoxMin = new TextBox();
             groupBoxUpDown = new GroupBox();
+            dataGridViewRecords = new DataGridView();
             groupBoxUpDown.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewRecords).BeginInit();
             SuspendLayout();
             // 
             // timer1
@@ -169,11 +171,21 @@
             groupBoxUpDown.TabIndex = 11;
             groupBoxUpDown.TabStop = false;
             // 
+            // dataGridViewRecords
+            // 
+            dataGridViewRecords.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewRecords.Location = new Point(38, 357);
+            dataGridViewRecords.Name = "dataGridViewRecords";
+            dataGridViewRecords.RowHeadersWidth = 62;
+            dataGridViewRecords.Size = new Size(1033, 483);
+            dataGridViewRecords.TabIndex = 12;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(877, 325);
+            ClientSize = new Size(1100, 868);
+            Controls.Add(dataGridViewRecords);
             Controls.Add(groupBoxUpDown);
             Controls.Add(checkBoxFocus);
             Controls.Add(textBox1);
@@ -187,9 +199,11 @@
             Text = "Form1";
             Activated += MainForm_Activated;
             Deactivate += MainForm_Deactivate;
+            Load += Form1_Load;
             Resize += MainForm_Resize;
             groupBoxUpDown.ResumeLayout(false);
             groupBoxUpDown.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewRecords).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -209,5 +223,6 @@
         private Button buttonDown;
         private TextBox textBoxMin;
         private GroupBox groupBoxUpDown;
+        private DataGridView dataGridViewRecords;
     }
 }
