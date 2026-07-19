@@ -39,18 +39,36 @@ namespace ActiveCounter
             if (e.RowIndex < 0 || e.RowIndex >= timerRecords.Count)
                 return;
 
-            // فرمت نمایش زمان شروع و توقف
-            if (dataGridViewRecords.Columns[e.ColumnIndex].DataPropertyName == "StartTime" ||
-                dataGridViewRecords.Columns[e.ColumnIndex].DataPropertyName == "StopTime")
+            // فرمت نمایش زمان شروع
+            if (dataGridViewRecords.Columns[e.ColumnIndex].DataPropertyName == "StartTime")
             {
-                if (e.Value is DateTime dateTime)
+                if (e.Value is DateTime startTime && startTime != DateTime.MinValue)
                 {
-                    e.Value = dateTime.ToString("HH:mm:ss");
+                    e.Value = startTime.ToString("yyyy/MM/dd HH:mm:ss");
+                    e.FormattingApplied = true;
+                }
+                else
+                {
+                    e.Value = string.Empty; // اگر زمان شروع خالی است
+                    e.FormattingApplied = true;
+                }
+            }
+
+            // فرمت نمایش زمان توقف
+            if (dataGridViewRecords.Columns[e.ColumnIndex].DataPropertyName == "StopTime")
+            {
+                if (e.Value is DateTime stopTime && stopTime != DateTime.MinValue)
+                {
+                    e.Value = stopTime.ToString("yyyy/MM/dd HH:mm:ss");
+                    e.FormattingApplied = true;
+                }
+                else
+                {
+                    e.Value = string.Empty; // اگر زمان توقف خالی است
                     e.FormattingApplied = true;
                 }
             }
         }
-
         private void InitializeDataGridView()
         {
             dataGridViewRecords.AutoGenerateColumns = false;
@@ -99,17 +117,28 @@ namespace ActiveCounter
             isRunning = true;
             startTime = DateTime.Now;
 
-            // محاسبه مدت زمان توقف از آخرین توقف تا الان
-            if (lastStopTime.HasValue)
+            // محاسبه مدت زمان توقف برای آخرین رکورد توقف شده
+            if (timerRecords.Count > 0)
             {
-                TimeSpan stopDuration = startTime.Value - lastStopTime.Value;
-                if (timerRecords.Count > 0)
+                TimerRecord lastRecord = timerRecords[timerRecords.Count - 1];
+                if (lastRecord.StopTime != DateTime.MinValue)
                 {
-                    timerRecords[timerRecords.Count - 1].StopDuration = stopDuration;
-                    dataGridViewRecords.DataSource = null;
-                    dataGridViewRecords.DataSource = timerRecords;
+                    lastRecord.StopDuration = startTime.Value - lastRecord.StopTime;
                 }
             }
+
+            // ایجاد رکورد جدید با زمان شروع
+            TimerRecord record = new TimerRecord
+            {
+                StartTime = startTime.Value,
+                StopTime = DateTime.MinValue, // زمان توقف خالی میماند
+                WorkDuration = TimeSpan.Zero,
+                StopDuration = TimeSpan.Zero
+            };
+
+            timerRecords.Add(record);
+            dataGridViewRecords.DataSource = null;
+            dataGridViewRecords.DataSource = timerRecords;
 
             timer1.Start();
             UpdateUI();
@@ -122,20 +151,25 @@ namespace ActiveCounter
             lastStopTime = stopTime;
 
             // محاسبه مدت زمان کار
-            if (startTime.HasValue && stopTime.HasValue)
+            if (startTime.HasValue && stopTime.HasValue && timerRecords.Count > 0)
             {
                 TimeSpan workDuration = stopTime.Value - startTime.Value;
 
-                // ایجاد رکورد جدید
-                TimerRecord record = new TimerRecord
-                {
-                    StartTime = startTime.Value,
-                    StopTime = stopTime.Value,
-                    WorkDuration = workDuration,
-                    StopDuration = TimeSpan.Zero // مقدار پیشفرض
-                };
+                // بهروزرسانی آخرین رکورد با زمان توقف و مدت زمان کار
+                TimerRecord lastRecord = timerRecords[timerRecords.Count - 1];
+                lastRecord.StopTime = stopTime.Value;
+                lastRecord.WorkDuration = workDuration;
 
-                timerRecords.Add(record);
+                // محاسبه مدت زمان توقف برای رکورد قبلی (اگر وجود دارد)
+                if (timerRecords.Count > 1)
+                {
+                    TimerRecord previousRecord = timerRecords[timerRecords.Count - 2];
+                    if (previousRecord.StopTime != DateTime.MinValue && lastRecord.StartTime != DateTime.MinValue)
+                    {
+                        previousRecord.StopDuration = lastRecord.StartTime - previousRecord.StopTime;
+                    }
+                }
+
                 dataGridViewRecords.DataSource = null;
                 dataGridViewRecords.DataSource = timerRecords;
             }

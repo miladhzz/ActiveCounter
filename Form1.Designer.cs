@@ -177,14 +177,14 @@
             dataGridViewRecords.Location = new Point(38, 357);
             dataGridViewRecords.Name = "dataGridViewRecords";
             dataGridViewRecords.RowHeadersWidth = 62;
-            dataGridViewRecords.Size = new Size(1033, 483);
+            dataGridViewRecords.Size = new Size(827, 483);
             dataGridViewRecords.TabIndex = 12;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1100, 868);
+            ClientSize = new Size(886, 868);
             Controls.Add(dataGridViewRecords);
             Controls.Add(groupBoxUpDown);
             Controls.Add(checkBoxFocus);
