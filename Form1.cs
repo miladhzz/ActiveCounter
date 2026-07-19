@@ -179,11 +179,27 @@ namespace ActiveCounter
         }
         private void ResetTimer()
         {
+            // ۱. تایمر را متوقف کن
             StopTimer();
 
+            // ۲. مقادیر ساعت، دقیقه و ثانیه را ریست کن
             hours = minutes = seconds = 0;
-            isMinimized = false;
+
+            // ۳. لیست رکوردها را خالی کن
+            timerRecords.Clear();
+
+            // ۴. فیلدهای زمان را ریست کن
+            startTime = null;
+            stopTime = null;
+            lastStopTime = null;
+
+            // ۵. DataGridView را بهروزرسانی کن
+            dataGridViewRecords.DataSource = null;
+            dataGridViewRecords.DataSource = timerRecords;
+
+            // ۶. واسط کاربری را بهروزرسانی کن
             UpdateLabels();
+            UpdateUI();
         }
 
         private void UpdateUI()
